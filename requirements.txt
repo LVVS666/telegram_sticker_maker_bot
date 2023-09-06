@@ -1,2 +1,3 @@
-pyTelegramBotAPI
+aiogram==3.0.0b7
+python-dotenv==0.21.1
 subprocess
