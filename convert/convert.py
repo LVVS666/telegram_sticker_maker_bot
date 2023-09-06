@@ -1,7 +1,7 @@
 import subprocess
 
 def convert(video):
-    output_video_path = 'data/output_video.webm'
+    output_video_path = 'bot/data/output_video.webm'
 
     # Команда для конвертации видео в формат WebM с VP9 кодеком и без аудио
     command = [

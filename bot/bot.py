@@ -46,6 +46,13 @@ async def process_file(message: types.Message):
     '''Бот получает файл, использует метод конвертирования файла и возвращает файл в нужном формате'''
 
     file_id = message.video.file_id
+    file_info = await bot.get_file(file_id)
+    file_path = file_info.file_path
+
+    # Сохраняем файл в папку "data"
+    file_name = f"data/{file_path.rsplit('/', 1)[-1]}"
+    await bot.download_file(file_path, file_name)
+    await message.answer('Ожидайте создания...')
     file_id = convert(file_id)
     await bot.send_video(message.from_user.id, file_id)
 
