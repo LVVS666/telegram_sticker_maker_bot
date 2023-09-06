@@ -5,6 +5,8 @@ from aiogram import Bot, Dispatcher, types
 from dotenv import load_dotenv
 
 
+from convert.convert import convert
+
 load_dotenv()
 
 logging.basicConfig(
@@ -19,19 +21,11 @@ dp = Dispatcher(bot)
 
 
 async def send_buttons(message: types.Message):
-
     '''Создание кнопок для выбора действий.'''
 
-    keyboard = types.InlineKeyboardMarkup()
-    button_video_sticker = types.InlineKeyboardButton(''
-                                                      'Создать видео-стикер',
-                                                      callback_data='video_sticker'
-                                                      )
-    button_sticker = types.InlineKeyboardButton(''
-                                                'Создать стикер',
-                                                callback_data='sticker'
-                                                )
-    keyboard.add(button_video_sticker, button_sticker)
+    keyboard = types.ReplyKeyboardMarkup(resize_keyboard=True)
+    video_sticker_button = types.KeyboardButton(text='Сделать видео стикер')
+    keyboard.add(video_sticker_button)
 
     await message.answer(
         'Что бы вы хотели сделать?',
@@ -39,21 +33,27 @@ async def send_buttons(message: types.Message):
     )
 
 
-@dp.callback_query_handler(lambda callback_query: True)
-async def process_buttons(callback_query: types.CallbackQuery):
+@dp.message_handler(text='Сделать видео стикер')
+async def create_video_sticker(message: types.Message):
+    '''После нажатия кнопки бот приглашает отправить файл'''
 
-    '''Обработка запроса от кнопок'''
+    await message.answer('Отправьте файл')
 
-    data = callback_query.data
-    if data == 'video_sticker':
-        await callback_query.answer('Тут функция конвертер видео')
-    elif data == 'sticker':
-        await callback_query.answer('Тут функция обработчик фото')
+
+
+@dp.message_handler(content_types=types.ContentType.VIDEO)
+async def process_file(message: types.Message):
+    '''Бот получает файл, использует метод конвертирования файла и возвращает файл в нужном формате'''
+
+    file_id = message.video.file_id
+    file_id = convert(file_id)
+    await bot.send_video(message.from_user.id, file_id)
+
+
 
 
 @dp.message_handler(commands=['start'])
 async def start(message: types.Message):
-
     '''Запуск бота, после команды старт отправляет кнопки.'''
 
     await send_buttons(message)
