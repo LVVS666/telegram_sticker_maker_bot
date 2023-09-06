@@ -45,6 +45,7 @@ async def create_video_sticker(message: types.Message):
 async def process_file(message: types.Message):
     '''Бот получает файл, использует метод конвертирования файла и возвращает файл в нужном формате'''
 
+
     file_id = message.video.file_id
     file_info = await bot.get_file(file_id)
     file_path = file_info.file_path
