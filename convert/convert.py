@@ -9,7 +9,7 @@ def convert(video):
         '-i', video,
         '-c:v', 'libvpx-vp9',
         '-an',  # Отключение аудио
-        '-vf', 'scale=512:512',  # Изменение размера
+        '-vf', 'scale=100:100',  # Изменение размера
         '-t', '3',  # Продолжительность 3 секунды
         '-f', 'webm',
         output_video_path
@@ -17,6 +17,6 @@ def convert(video):
 
     subprocess.run(command, check=True)
 
-convert('IMG_0050.MOV')
+convert('Сюда будет отправляться видео')
 
 
