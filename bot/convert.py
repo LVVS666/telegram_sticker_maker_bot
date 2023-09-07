@@ -1,7 +1,12 @@
+import os
 import subprocess
 
-def convert(video):
-    output_video_path = 'bot/data/output_video.webm'
+from bot import TEMP_FOLDER
+
+
+def convert_video(video):
+    output_video_path = os.path.join(TEMP_FOLDER, "converted_video.mp4")
+
 
     # Команда для конвертации видео в формат WebM с VP9 кодеком и без аудио
     command = [

@@ -4,8 +4,7 @@ import os
 from aiogram import Bot, Dispatcher, types
 from dotenv import load_dotenv
 
-
-from convert.convert import convert
+import convert
 
 load_dotenv()
 
@@ -39,25 +38,20 @@ async def create_video_sticker(message: types.Message):
 
     await message.answer('Отправьте файл')
 
+TEMP_FOLDER = "temp_files"
+os.makedirs(TEMP_FOLDER, exist_ok=True)
 
 
 @dp.message_handler(content_types=types.ContentType.VIDEO)
 async def process_file(message: types.Message):
     '''Бот получает файл, использует метод конвертирования файла и возвращает файл в нужном формате'''
 
-
-    file_id = message.video.file_id
-    file_info = await bot.get_file(file_id)
-    file_path = file_info.file_path
-
-    # Сохраняем файл в папку "data"
-    file_name = f"data/{file_path.rsplit('/', 1)[-1]}"
-    await bot.download_file(file_path, file_name)
+    video_file = os.path.join(TEMP_FOLDER, f'video_{message.from_user.id}.mp4')
+    await message.video.download(video_file)
+    converted_video = convert.convert_video(video_file)
     await message.answer('Ожидайте создания...')
-    file_id = convert(file_id)
-    await bot.send_video(message.from_user.id, file_id)
-
-
+    with open(converted_video, 'rb') as video:
+        await message.reply_video(video)
 
 
 @dp.message_handler(commands=['start'])
