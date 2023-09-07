@@ -25,12 +25,14 @@ dp = Dispatcher(bot)
 logging_middleware = LoggingMiddleware()
 dp.middleware.setup(logging_middleware)
 
+
 async def send_buttons(message: types.Message):
     '''Создание кнопок для выбора действий.'''
 
     keyboard = types.ReplyKeyboardMarkup(resize_keyboard=True)
     video_sticker_button = types.KeyboardButton(text='Сделать видео стикер')
-    keyboard.add(video_sticker_button)
+    emoji_sticker_button = types.KeyboardButton(text='Сделать видео эмоджи')
+    keyboard.add(video_sticker_button, emoji_sticker_button)
 
     await message.answer(
         'Что бы вы хотели сделать?',
