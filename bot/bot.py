@@ -49,7 +49,7 @@ async def send_buttons(message: types.Message):
 @dp.message_handler(lambda message: message.text in ['Сделать видео-стикер', 'Сделать видео-эмоджи'])
 async def create_video(message: types.Message):
     '''После нажатия кнопки бот приглашает отправить файл'''
-
+    global conversion_format
     if message.text == 'Сделать видео-стикер':
         conversion_format = 'sticker'
     else:
@@ -61,7 +61,8 @@ async def create_video(message: types.Message):
 async def process_file(message: types.Message):
     '''Бот получает файл, использует метод конвертирования файла и возвращает файл в нужном формате'''
 
-    conversion_format = 'sticker' if message.text == 'Сделать видео-стикер' else 'emoji'
+    global conversion_format
+
     video_file = os.path.join(TEMP_FOLDER, f'video_{message.from_user.id}.mp4')
     await message.video.download(video_file)
     converted_video = await asyncio.to_thread(convert.convert_video, video_file, conversion_format)
