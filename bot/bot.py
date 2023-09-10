@@ -2,10 +2,11 @@ import logging
 import os
 import asyncio
 import shutil
-
+import logging
 from aiogram import Bot, Dispatcher, types, F
 from dotenv import load_dotenv
-from aiogram.contrib.middlewares.logging import LoggingMiddleware
+from aiogram.filters.command import Command
+
 
 import convert
 
@@ -22,16 +23,13 @@ BOT_TOKEN = os.getenv('TOKEN_BOT')
 bot = Bot(token=BOT_TOKEN)
 dp = Dispatcher()
 
-'''Логирование событий бота'''
-logging_middleware = LoggingMiddleware()
-dp.middleware.setup(logging_middleware)
 
 '''Создание временных файлов'''
 TEMP_FOLDER = "temp_files"
 os.makedirs(TEMP_FOLDER, exist_ok=True)
 
 
-@dp.message(Commands=('start'))
+@dp.message(Command('start'))
 async def start(message: types.Message):
     '''Запуск бота, после команды старт отправляет кнопки.'''
     kb = [
@@ -45,28 +43,12 @@ async def start(message: types.Message):
 
 @dp.message(F.text == 'Сделать видео-стикер')
 async def create_video_sticker(message: types.Message):
-    conversion_format = 'sticker'
-    video_file = os.path.join(TEMP_FOLDER, f'video_{message.from_user.id}.mp4')
-    await message.video.download(video_file)
-    converted_video = await asyncio.to_thread(convert.convert_video, video_file, conversion_format)
-    await message.answer('Ожидайте создания...')
-    with open(converted_video, 'rb') as video:
-        await message.reply_video(video)
-    shutil.rmtree(TEMP_FOLDER)
+    await message.answer('Отправьте видео.')
 
-@dp.message(F.text == 'Сделать видео-эмоджи')
-async def create_video_sticker(message: types.Message):
-    conversion_format = 'emoji'
-    video_file = os.path.join(TEMP_FOLDER, f'video_{message.from_user.id}.mp4')
-    await message.video.download(video_file)
-    converted_video = await asyncio.to_thread(convert.convert_video, video_file, conversion_format)
-    await message.answer('Ожидайте создания...')
-    with open(converted_video, 'rb') as video:
-        await message.reply_video(video)
-    shutil.rmtree(TEMP_FOLDER)
 
 async def main():
     await dp.start_polling(bot)
+
 
 if __name__ == '__main__':
     asyncio.run(main())
