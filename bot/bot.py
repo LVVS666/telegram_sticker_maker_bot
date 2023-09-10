@@ -52,7 +52,7 @@ async def send_video_sticker(message: types.Message, bot: Bot):
     await bot.download(message.video, destination=video_file)
     convert_video = await asyncio.to_thread(convert.convert_video, video_file, conversion_format)
     with open(convert_video, 'rb') as video:
-        await message.answer_video(convert_video)
+        await message.answer_video(types.BufferedInputFile(video.read(), filename='convert_video.webm'))
     shutil.rmtree(TEMP_FOLDER)
 
 # @dp.message(F.text == 'Сделать видео-эмоджи')
