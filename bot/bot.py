@@ -3,7 +3,7 @@ import os
 import asyncio
 import shutil
 
-from aiogram import Bot, Dispatcher, types
+from aiogram import Bot, Dispatcher, types, F
 from dotenv import load_dotenv
 from aiogram.contrib.middlewares.logging import LoggingMiddleware
 
@@ -20,7 +20,7 @@ logging.basicConfig(
 '''Создание диспетчера'''
 BOT_TOKEN = os.getenv('TOKEN_BOT')
 bot = Bot(token=BOT_TOKEN)
-dp = Dispatcher(bot)
+dp = Dispatcher()
 
 '''Логирование событий бота'''
 logging_middleware = LoggingMiddleware()
@@ -31,38 +31,21 @@ TEMP_FOLDER = "temp_files"
 os.makedirs(TEMP_FOLDER, exist_ok=True)
 
 
+@dp.message(Commands=('start'))
+async def start(message: types.Message):
+    '''Запуск бота, после команды старт отправляет кнопки.'''
+    kb = [
+        [types.KeyboardButton(text='Сделать видео-стикер')],
+        [types.KeyboardButton(text='Сделать видео-эмоджи')]
+    ]
+    keyboard = types.ReplyKeyboardMarkup(keyboard=kb, resize_keyboard=True)
 
-async def send_buttons(message: types.Message):
-    '''Создание кнопок для выбора действий.'''
-
-    keyboard = types.ReplyKeyboardMarkup(resize_keyboard=True)
-    video_sticker_button = types.KeyboardButton(text='Сделать видео-стикер')
-    emoji_sticker_button = types.KeyboardButton(text='Сделать видео-эмоджи')
-    keyboard.add(video_sticker_button, emoji_sticker_button)
-
-    await message.answer(
-        'Что бы вы хотели сделать?',
-        reply_markup=keyboard
-    )
+    await message.answer('Что бы вы хотели сделать?', reply_markup=keyboard)
 
 
-@dp.message_handler(lambda message: message.text in ['Сделать видео-стикер', 'Сделать видео-эмоджи'])
-async def create_video(message: types.Message):
-    '''После нажатия кнопки бот приглашает отправить файл'''
-    global conversion_format
-    if message.text == 'Сделать видео-стикер':
-        conversion_format = 'sticker'
-    else:
-        conversion_format = 'emoji'
-    await message.answer('Отправьте файл')
-
-
-@dp.message_handler(content_types=types.ContentType.VIDEO)
-async def process_file(message: types.Message):
-    '''Бот получает файл, использует метод конвертирования файла и возвращает файл в нужном формате'''
-
-    global conversion_format
-
+@dp.message(F.text == 'Сделать видео-стикер')
+async def create_video_sticker(message: types.Message):
+    conversion_format = 'sticker'
     video_file = os.path.join(TEMP_FOLDER, f'video_{message.from_user.id}.mp4')
     await message.video.download(video_file)
     converted_video = await asyncio.to_thread(convert.convert_video, video_file, conversion_format)
@@ -71,14 +54,19 @@ async def process_file(message: types.Message):
         await message.reply_video(video)
     shutil.rmtree(TEMP_FOLDER)
 
+@dp.message(F.text == 'Сделать видео-эмоджи')
+async def create_video_sticker(message: types.Message):
+    conversion_format = 'emoji'
+    video_file = os.path.join(TEMP_FOLDER, f'video_{message.from_user.id}.mp4')
+    await message.video.download(video_file)
+    converted_video = await asyncio.to_thread(convert.convert_video, video_file, conversion_format)
+    await message.answer('Ожидайте создания...')
+    with open(converted_video, 'rb') as video:
+        await message.reply_video(video)
+    shutil.rmtree(TEMP_FOLDER)
 
-@dp.message_handler(commands=['start'])
-async def start(message: types.Message):
-    '''Запуск бота, после команды старт отправляет кнопки.'''
-
-    await send_buttons(message)
-
+async def main():
+    await dp.start_polling(bot)
 
 if __name__ == '__main__':
-    from aiogram import executor
-    executor.start_polling(dp, skip_updates=True)
+    asyncio.run(main())
