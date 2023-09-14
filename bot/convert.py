@@ -15,14 +15,14 @@ def convert_video(video, conversion_format):
         '-i', video,
         '-c:v', 'libvpx-vp9',
         '-an',  # Отключение аудио
-        '-vf', 'scale=512:512, crop=512:512',  # Изменение размера и обрезка под размер
+        '-vf', 'scale=512:512:force_original_aspect_ratio=decrease',  # Изменение размера и обрезка под размер
         '-t', '3',  # Продолжительность 3 секунды
         '-f', 'webm',
         output_video_path
     ]
     if conversion_format == 'emoji':
         command_emoji = command.copy()
-        command_emoji[7] = 'scale=100:100, crop=100:100'
+        command_emoji[7] = 'scale=100:100:force_original_aspect_ratio=decrease'
         subprocess.run(command_emoji, check=True)
         return output_video_path
     subprocess.run(command, check=True)
