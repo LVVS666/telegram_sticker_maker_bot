@@ -43,11 +43,18 @@ async def start(message: types.Message):
 
 @dp.message(F.text == 'Сделать видео-стикер')
 async def create_video_sticker(message: types.Message):
+    global conversion_format
+    conversion_format = 'sticker'
+    await message.answer('Отправьте видео.')
+
+@dp.message(F.text == 'Сделать видео-эмоджи')
+async def create_video_sticker(message: types.Message):
+    global conversion_format
+    conversion_format = 'emoji'
     await message.answer('Отправьте видео.')
 
 @dp.message(F.video)
 async def send_video_sticker(message: types.Message, bot: Bot):
-    conversion_format = 'sticker'
     video_file = os.path.join(TEMP_FOLDER, f'video_{message.from_user.id}.mp4')
     await bot.download(message.video, destination=video_file)
     convert_video = await asyncio.to_thread(convert.convert_video, video_file, conversion_format)
@@ -55,9 +62,7 @@ async def send_video_sticker(message: types.Message, bot: Bot):
         await message.answer_video(types.BufferedInputFile(video.read(), filename='convert_video.webm'))
     shutil.rmtree(TEMP_FOLDER)
 
-# @dp.message(F.text == 'Сделать видео-эмоджи')
-# async def create_video_sticker(message: types.Message):
-#     await message.answer('Отправьте видео.')
+
 
 async def main():
     await dp.start_polling(bot)
