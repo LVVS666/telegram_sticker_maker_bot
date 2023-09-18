@@ -22,7 +22,7 @@ def convert_video(video, conversion_format):
     ]
     if conversion_format == 'emoji':
         command_emoji = command.copy()
-        command_emoji[7] = 'scale=100:100'
+        command_emoji[7] = 'scale=100:-1,crop=100:100'
         subprocess.run(command_emoji, check=True)
         return output_video_path
     subprocess.run(command, check=True)
