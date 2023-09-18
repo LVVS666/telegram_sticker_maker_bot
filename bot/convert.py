@@ -5,7 +5,7 @@ from bot import TEMP_FOLDER
 
 
 def convert_video(video, conversion_format):
-    '''Функция принимает видео файл и возвращает его в формате webm с параметрами видео-стикера'''
+    '''Функция принимает видео файл и возвращает его в формате webm с параметрами видео-стикера/видео-эмоджи'''
 
     output_video_path = os.path.join(TEMP_FOLDER, "converted_video.webm")
 
