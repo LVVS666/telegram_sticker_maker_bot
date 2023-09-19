@@ -1,12 +1,10 @@
+import asyncio
 import logging
 import os
-import asyncio
 import shutil
-import logging
 from aiogram import Bot, Dispatcher, types, F
 from dotenv import load_dotenv
 from aiogram.filters.command import Command
-
 
 import convert
 
@@ -18,20 +16,21 @@ logging.basicConfig(
     filemode='w'
 )
 
-'''Создание диспетчера'''
+# Создание диспетчера
 BOT_TOKEN = os.getenv('TOKEN_BOT')
 bot = Bot(token=BOT_TOKEN)
 dp = Dispatcher()
 
-
-'''Создание временных файлов'''
+# Создание временных файлов
 TEMP_FOLDER = "temp_files"
 os.makedirs(TEMP_FOLDER, exist_ok=True)
 
 
 @dp.message(Command('start'))
 async def start(message: types.Message):
-    '''Запуск бота, после команды старт отправляет кнопки.'''
+    # Запуск бота, после команды старт отправляет кнопки.
+    global kb
+    global keyboard
     kb = [
         [types.KeyboardButton(text='Сделать видео-стикер')],
         [types.KeyboardButton(text='Сделать видео-эмоджи')]
@@ -47,11 +46,19 @@ async def create_video_sticker(message: types.Message):
     conversion_format = 'sticker'
     await message.answer('Отправьте видео.')
 
+
 @dp.message(F.text == 'Сделать видео-эмоджи')
 async def create_video_sticker(message: types.Message):
     global conversion_format
     conversion_format = 'emoji'
     await message.answer('Отправьте видео.')
+
+
+@dp.message(F.text)
+async def unscripted_event_handler(message: types.Message):
+    # Обработчик событий не по сценарию, отправляет кнопки
+    await message.answer('Выберите, что нужно сделать?', reply_markup=keyboard)
+
 
 @dp.message(F.video)
 async def send_video_sticker(message: types.Message, bot: Bot):
@@ -61,7 +68,6 @@ async def send_video_sticker(message: types.Message, bot: Bot):
     with open(convert_video, 'rb') as video:
         await message.answer_video(types.BufferedInputFile(video.read(), filename='convert_video.webm'))
     shutil.rmtree(TEMP_FOLDER)
-
 
 
 async def main():
