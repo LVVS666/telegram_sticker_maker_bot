@@ -78,7 +78,7 @@ async def send_video_sticker(message: types.Message, bot: Bot, state: FSMContext
 @dp.message(VideoState.create_video)
 async def unscripted_event_handler(message: types.Message):
     # Обработчик событий не по сценарию, отправляет кнопки
-    await message.answer('Выберите, что нужно сделать?', reply_markup=keyboard)
+    await message.answer('Неверный формат сообщения, попробуйте еще раз отправить видео-файл')
 
 
 async def main():
