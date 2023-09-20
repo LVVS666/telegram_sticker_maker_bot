@@ -2,11 +2,14 @@ import asyncio
 import logging
 import os
 import shutil
+import subprocess
+
 from aiogram import Bot, Dispatcher, types, F
 from dotenv import load_dotenv
 from aiogram.filters.command import Command
 from aiogram.fsm.context import FSMContext
 from aiogram.filters.state import State, StatesGroup
+
 
 import convert
 
@@ -35,7 +38,10 @@ class VideoState(StatesGroup):
 
 @dp.message(Command('start'))
 async def start(message: types.Message):
-    # Запуск бота, после команды старт отправляет кнопки.
+    '''
+    Запуск бота, после команды старт отправляет кнопки.
+    '''
+
     global kb
     global keyboard
     kb = [
@@ -66,11 +72,16 @@ async def create_video_emoji(message: types.Message, state: FSMContext):
 
 @dp.message(VideoState.create_video, F.video)
 async def send_video_sticker(message: types.Message, bot: Bot, state: FSMContext):
+    '''
+    Обработка видео-файла присланного пользователем и отправка конвертированного видео-файла назад пользователю
+    '''
+
     video_file = os.path.join(TEMP_FOLDER, f'video_{message.from_user.id}.mp4')
     await bot.download(message.video, destination=video_file)
     convert_video = await asyncio.to_thread(convert.convert_video, video_file, conversion_format)
     with open(convert_video, 'rb') as video:
         await message.answer_video(types.BufferedInputFile(video.read(), filename='convert_video.webm'))
+        logging.info(f'Конвертация файла для пользователя: {message.from_user.id} выполнена успешно')
         await state.clear()
     shutil.rmtree(TEMP_FOLDER)
 
@@ -82,7 +93,15 @@ async def unscripted_event_handler(message: types.Message):
 
 
 async def main():
-    await dp.start_polling(bot)
+    while True:
+        try:
+            await dp.start_polling(bot)
+            logging.info('Бот запущен.')
+        except ConnectionError:
+                logging.error('Произошла ошибка соединения с сервером')
+                # Перезапуск бота.
+                restart_bot = subprocess.Popen(['python', 'bot.py'])
+                restart_bot.wait()
 
 
 if __name__ == '__main__':
