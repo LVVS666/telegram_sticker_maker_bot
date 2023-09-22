@@ -49,7 +49,6 @@ async def start(message: types.Message):
         [types.KeyboardButton(text='Сделать видео-эмоджи')]
     ]
     keyboard = types.ReplyKeyboardMarkup(keyboard=kb, resize_keyboard=True)
-
     await message.answer('Что бы вы хотели сделать?', reply_markup=keyboard)
 
 
