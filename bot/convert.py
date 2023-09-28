@@ -13,7 +13,7 @@ def convert_video(video, conversion_format):
 
     # Команда для конвертации видео в формат WebM с VP9 кодеком и без аудио
     command = [
-        '/opt/homebrew/bin/ffmpeg',
+        '/opt/homebrew/bin/ffmpeg',  # путь до ffmpeg
         '-i', video,  # Входное видео
         '-c:v', 'libvpx-vp9',  # Видеокодек VP9
         '-an',  # Отключение аудио
