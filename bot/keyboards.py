@@ -18,3 +18,12 @@ keyboard_new_stickerpack_menu = types.ReplyKeyboardMarkup(keyboard=kb_new_sticke
 
 '''После запроса на имя стикер пака и адрес бот просит отправить файл формата стикера, после просит
 отправить соотвествующий эмоджи, дальше перенаправляет в меню стикер пака'''
+
+'''Меню стикер-пака'''
+kb_stickerpack = [
+    [types.KeyboardButton(text='Добавить стикер')],
+    [types.KeyboardButton(text='Удалить стикер')],
+    [types.KeyboardButton(text='Удалить стикер-пак')],
+]
+
+keyboard_stickerpack_menu = types.ReplyKeyboardMarkup(keyboard=kb_stickerpack, resize_keyboard=True)
