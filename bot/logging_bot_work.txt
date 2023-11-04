@@ -1,0 +1,8 @@
+INFO:aiogram.dispatcher:Start polling
+INFO:aiogram.dispatcher:Run polling for bot @TStickMBot id=6432075922 - 'Telegram Sticker Maker'
+WARNING:aiogram.dispatcher:Received SIGINT signal
+INFO:aiogram.dispatcher:Polling stopped for bot @TStickMBot id=6432075922 - 'Telegram Sticker Maker'
+INFO:aiogram.dispatcher:Polling stopped
+INFO:root:Бот запущен.
+INFO:aiogram.dispatcher:Start polling
+INFO:aiogram.dispatcher:Run polling for bot @TStickMBot id=6432075922 - 'Telegram Sticker Maker'
