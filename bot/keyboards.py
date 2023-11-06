@@ -11,7 +11,6 @@ keyboard_main_menu = types.ReplyKeyboardMarkup(keyboard=kb_main_menu, resize_key
 '''Выбор действия в меню "Создать новый стикер-пак"'''
 kb_new_stickerpack = [
         [types.KeyboardButton(text='Видео стикер-пак')],
-        [types.KeyboardButton(text='Эмоджи стикер-пак')],
         [types.KeyboardButton(text='Стандартный стикер-пак')]
     ]
 keyboard_new_stickerpack_menu = types.ReplyKeyboardMarkup(keyboard=kb_new_stickerpack, resize_keyboard=True)
