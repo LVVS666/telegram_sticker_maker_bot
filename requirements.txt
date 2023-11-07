@@ -1,4 +1,5 @@
 aiogram==3.0.0b7
 python-dotenv==0.21.1
+rembg==2.0.52
 
 

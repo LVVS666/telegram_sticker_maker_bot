@@ -1,10 +1,13 @@
 import os
 import subprocess
 
+from PIL import Image
+from rembg import remove
+
 from bot import TEMP_FOLDER
 
 
-def convert_video(video, conversion_format):
+def convert_video(video):
     '''
     Функция принимает видео файл и возвращает его в формате webm с параметрами видео-стикера/видео-эмоджи
     '''
@@ -22,12 +25,10 @@ def convert_video(video, conversion_format):
         '-f', 'webm',
         output_video_path
     ]
-
-    if conversion_format == 'emoji':
-        command_emoji = command.copy()
-        command_emoji[7] = 'scale=100:-1,crop=100:100'
-        subprocess.run(command_emoji, check=True)
-        return output_video_path
-
     subprocess.run(command, check=True)
     return output_video_path
+
+def convert_image(image):
+    input_image = Image.open(image)
+    output_image = remove(input_image)
+    return output_image
