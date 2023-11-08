@@ -1,5 +1,6 @@
 import os
 import subprocess
+from io import BytesIO
 
 from PIL import Image
 from rembg import remove
@@ -28,7 +29,11 @@ def convert_video(video):
     subprocess.run(command, check=True)
     return output_video_path
 
+
 def convert_image(image):
     input_image = Image.open(image)
     output_image = remove(input_image)
-    return output_image
+    output_image = output_image.resize((512, 512))
+    image_bytes = BytesIO()
+    output_image.save(image_bytes, format="PNG")
+    return image_bytes.getvalue()

@@ -3,6 +3,7 @@ import logging
 import os
 import shutil
 import subprocess
+from io import BytesIO
 
 from aiogram import Bot, Dispatcher, types, F
 from dotenv import load_dotenv
@@ -40,7 +41,6 @@ class VideoState(StatesGroup):
     add_sticker_state = State()
 
 
-
 @dp.message(Command('start'))
 async def start(message: types.Message):
     '''
@@ -48,7 +48,6 @@ async def start(message: types.Message):
     '''
 
     await message.answer('Что бы вы хотели сделать?', reply_markup=keyboards.kb_main_menu)
-
 
 
 @dp.message(F.text == 'Создать новый стикер-пак')
@@ -112,24 +111,24 @@ async def create_sticker(message: types.Message, state:FSMContext):
     await message.answer('Отправьте файл для создания стикера.')
 
 @dp.message(VideoState.add_sticker_state, F.Video)
-async def add_sticker_video(message: types.Message, state:FSMContext):
+async def add_sticker_video(message: types.Message, bot: Bot, state:FSMContext):
     '''Принимает видео для обработки в видео стикер'''
     video_file = os.path.join(TEMP_FOLDER, f'video_{message.from_user.id}.mp4')
     await bot.download(message.video, destination=video_file)
-    convert_video = await asyncio.to_thread(convert.convert_video, video_file)
-    #Добавить в метод создание стикера convert_video
+    converted_video = await asyncio.to_thread(convert.convert_video, video_file)
+    #Добавить в метод создание стикера converted_video
     shutil.rmtree(TEMP_FOLDER)
     await state.set_state(VideoState.emoji_in_sticker)
     await message.answer('Отправьте эмоджи подходящий стикеру')
 
 
 @dp.message(VideoState.add_sticker_state, F.Image)
-async def add_sticker_image(message: types.Message, state:FSMContext):
+async def add_sticker_image(message: types.Message, bot: Bot, state: FSMContext):
     '''Принимает фото для обработки в стикер'''
     image_file = os.path.join(TEMP_FOLDER, f'image_{message.from_user.id}.jpg')
-    await bot.download(message.photo, destination=image_file)
-    convert_image = await asyncio.to_thread(convert.convert_image, image_file)
-    #Добавить в метод создание стикера convert_image
+    await bot.download(message.photo[-1].file_id, destination=image_file)
+    converted_image = await asyncio.to_thread(convert.convert_image, image_file)
+    #Добавить converted_image в add_sticker
     shutil.rmtree(TEMP_FOLDER)
     await state.set_state(VideoState.emoji_in_sticker)
     await message.answer('Отправьте эмоджи подходящий стикеру')
