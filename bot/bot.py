@@ -47,14 +47,14 @@ async def start(message: types.Message):
     Запуск бота, после команды старт отправляет кнопки.
     '''
 
-    await message.answer('Что бы вы хотели сделать?', reply_markup=keyboards.kb_main_menu)
+    await message.answer('Что бы вы хотели сделать?', reply_markup=keyboards.keyboard_main_menu)
 
 
 @dp.message(F.text == 'Создать новый стикер-пак')
 async def create_new_sticker_pack(message: types.Message):
     '''Выбор создаваемого стикерпака'''
 
-    await message.answer('Какой стикерпак вы бы хотели создать?', reply_markup=keyboards.kb_new_stickerpack)
+    await message.answer('Какой стикерпак вы бы хотели создать?', reply_markup=keyboards.keyboard_new_stickerpack_menu)
 
 
 @dp.message(F.text == ['Видео стикер-пак', 'Стандартный стикер-пак'])
@@ -84,6 +84,7 @@ async def title_sticker_pack(message: types.Message, state: FSMContext):
 @dp.message(F.text == 'Выбрать готовый стикер-пак')
 async def all_sticker_pack(message: types.Message):
     '''Отправляется список всех созданных стикер-паков'''
+    await message.answer('Выбрать действие', reply_markup=keyboards.keyboard_stickerpack_menu)
     pass
 
 @dp.message(F.text == 'Удалить стикер')
