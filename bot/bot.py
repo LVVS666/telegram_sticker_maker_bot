@@ -57,7 +57,7 @@ async def create_new_sticker_pack(message: types.Message):
     await message.answer('Какой стикерпак вы бы хотели создать?', reply_markup=keyboards.keyboard_new_stickerpack_menu)
 
 
-@dp.message(F.text == 'Видео стикер-пак' or 'Стандартный стикер-пак')
+@dp.message(F.text == 'Видео стикер-пак' and F.text =='Стандартный стикер-пак')
 async def type_sticker_pack(message: types.Message, state: FSMContext):
     '''Название для стикер-пака'''
     await state.set_state(VideoState.name_sticker_pack)
