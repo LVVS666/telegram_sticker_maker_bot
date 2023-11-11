@@ -91,6 +91,20 @@ async def title_sticker_pack(message: types.Message, state: FSMContext):
     await state.set_state(VideoState.emoji_in_sticker)
 
 
+@dp.message(VideoState.emoji_in_sticker)
+async def add_sticker_in_emoji(message: types.Message, state: FSMContext):
+    """Принимает эмоджи"""
+    await state.update_data(emoji_in_sticker=message.text)
+    data = await state.get_data()
+    video_pack_data = data.get('video_pack', False)
+    if video_pack_data:
+        print(video_pack_data)
+        await state.set_state(VideoState.video)
+    else:
+        await state.set_state(VideoState.image)
+    # Вернуться в меню стикер-пака
+    await message.answer('Отправьте файл для создания стикера.')
+
 '''Работа с меню стикерпака'''
 
 
@@ -156,12 +170,6 @@ async def unscripted_event_handler(message: types.Message):
     '''Обработчик событий не по сценарию, отправляет кнопки'''
     await message.answer('Неверный формат сообщения, попробуйте еще раз отправить видео-файл')
 
-
-@dp.message(VideoState.emoji_in_sticker, F.Emoji)
-async def add_sticker_in_emoji(message: types.Message, state: FSMContext):
-    '''Принимает эмоджи'''
-    await message.answer('Стикер успешно создан')
-    await state.clear()
     # Вернуться в меню стикер-пака
 
 
