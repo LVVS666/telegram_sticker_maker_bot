@@ -206,21 +206,8 @@ async def create_sticker_set(message, user_id, name, title, stickers, sticker_fo
     if create_set:
         print('done')
         await message.answer('твой стикерпак готов')
-
     else:
         await message.answer('Error')
-
-
-@dp.message(VideoState.add_sticker_state, F.Image)
-async def add_sticker_image(message: types.Message, bot: Bot, state: FSMContext):
-    '''Принимает фото для обработки в стикер'''
-    image_file = os.path.join(TEMP_FOLDER, f'image_{message.from_user.id}.jpg')
-    await bot.download(message.photo[-1].file_id, destination=image_file)
-    converted_image = await asyncio.to_thread(convert.convert_image, image_file)
-    # Добавить converted_image в add_sticker
-    shutil.rmtree(TEMP_FOLDER)
-    await state.set_state(VideoState.emoji_in_sticker)
-    await message.answer('Отправьте эмоджи подходящий стикеру')
 
 
 @dp.message(VideoState.add_sticker_state)
