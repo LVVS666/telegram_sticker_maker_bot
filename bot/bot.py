@@ -141,16 +141,48 @@ async def create_sticker(message: types.Message, state: FSMContext):
     await message.answer('Отправьте файл для создания стикера.')
 
 
-@dp.message(VideoState.add_sticker_state, F.Video)
+@dp.message(VideoState.video)
 async def add_sticker_video(message: types.Message, bot: Bot, state: FSMContext):
-    '''Принимает видео для обработки в видео стикер'''
+    """Принимает видео для обработки в видео стикер"""
+    await state.update_data(video=message.video.file_id)
     video_file = os.path.join(TEMP_FOLDER, f'video_{message.from_user.id}.mp4')
     await bot.download(message.video, destination=video_file)
     converted_video = await asyncio.to_thread(convert.convert_video, video_file)
+    with open(converted_video, 'rb') as file:
+        video_path = FSInputFile(file.name) # это для скачивания для файлов, только так принимает изображение или видео для метода
     # Добавить в метод создание стикера converted_video
+    data = await state.get_data()
+    name = data['name_sticker_pack']
+    title = data['title_sticker_pack']
+    stickers = [{'sticker': video_path,
+                 'emoji_list': [data['emoji_in_sticker']]}]
+    sticker_format = 'video'
+    print(name, title)
+    await create_sticker_set(message=message,
+                             user_id=message.from_user.id,
+                             name=name,
+                             title=title,
+                             stickers=stickers,
+                             sticker_format=sticker_format
+                             )
     shutil.rmtree(TEMP_FOLDER)
-    await state.set_state(VideoState.emoji_in_sticker)
-    await message.answer('Отправьте эмоджи подходящий стикеру')
+
+
+async def create_sticker_set(message, user_id, name, title, stickers, sticker_format):
+    """Создание стикерпака"""
+    create_set = await bot(CreateNewStickerSet(
+        user_id=user_id,
+        name=name,
+        title=title,
+        stickers=stickers,
+        sticker_format=sticker_format
+    ))
+    if create_set:
+        print('done')
+        await message.answer('твой стикерпак готов')
+
+    else:
+        await message.answer('Error')
 
 
 @dp.message(VideoState.add_sticker_state, F.Image)
