@@ -157,7 +157,6 @@ async def add_sticker_video(message: types.Message, bot: Bot, state: FSMContext)
     stickers = [{'sticker': video_path,
                  'emoji_list': [data['emoji_in_sticker']]}]
     sticker_format = 'video'
-    print(name, title)
     await create_sticker_set(message=message,
                              user_id=message.from_user.id,
                              name=name,
