@@ -85,10 +85,10 @@ async def create_name_sticker_pack(message: types.Message, state: FSMContext):
 
 @dp.message(VideoState.title_sticker_pack)
 async def title_sticker_pack(message: types.Message, state: FSMContext):
-    '''Cоздание стикер-пака'''
+    """Эмоджи для стикер-пака"""
     await state.update_data(title_sticker_pack=message.text)
-    await message.answer('Стикерпак успешно создан!')
-    await state.clear()
+    await message.answer('Отправьте эмоджи подходящий стикеру')
+    await state.set_state(VideoState.emoji_in_sticker)
 
 
 '''Работа с меню стикерпака'''
