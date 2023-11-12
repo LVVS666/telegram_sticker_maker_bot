@@ -44,6 +44,16 @@ class VideoState(StatesGroup):
     delete_sticker_state = State()
     add_sticker_state = State()
 
+async def create_sticker_set(user_id, name, title, stickers, sticker_format):
+    """Создание стикерпака"""
+    create_set = await bot(CreateNewStickerSet(
+        user_id=user_id,
+        name=name,
+        title=title,
+        stickers=stickers,
+        sticker_format=sticker_format
+    ))
+    return create_set
 
 @dp.message(Command('start'))
 async def start(message: types.Message):
@@ -84,10 +94,38 @@ async def create_name_sticker_pack(message: types.Message, state: FSMContext):
 
 @dp.message(VideoState.title_sticker_pack)
 async def title_sticker_pack(message: types.Message, state: FSMContext):
-    """Эмоджи для стикер-пака"""
+    """Файлы для стикеров"""
     await state.update_data(title_sticker_pack=message.text)
+    data = await state.get_data()
+    video_pack_data = data.get('video_pack', False)
+    if video_pack_data:
+        await state.set_state(VideoState.video)
+    else:
+        await state.set_state(VideoState.image)
+    await message.answer('Отправьте файл для создания стикера.')
+
+@dp.message(VideoState.video)
+async def add_sticker_video(message: types.Message, bot: Bot, state: FSMContext):
+    """Принимает видео для обработки в видео стикер"""
+    video_file = os.path.join(TEMP_FOLDER, f'video_{message.from_user.id}.mp4')
+    await bot.download(message.video, destination=video_file)
+    converted_video = await asyncio.to_thread(convert.convert_video, video_file)
+    await state.update_data(video=converted_video)
     await message.answer('Отправьте эмоджи подходящий стикеру')
     await state.set_state(VideoState.emoji_in_sticker)
+
+
+@dp.message(VideoState.image)
+async def add_sticker_image(message: types.Message, bot: Bot, state: FSMContext):
+    """Принимает фото для обработки в стикер"""
+    image_file = os.path.join(TEMP_FOLDER, f'image_{message.from_user.id}.jpg')
+    await bot.download(message.photo[-1].file_id, destination=image_file)
+    converted_image = await asyncio.to_thread(convert.convert_image, image_file)
+    await state.update_data(image=converted_image)
+    shutil.rmtree(TEMP_FOLDER)
+    await message.answer('Отправьте эмоджи подходящий стикеру')
+    await state.set_state(VideoState.emoji_in_sticker)
+
 
 
 @dp.message(VideoState.emoji_in_sticker)
@@ -95,116 +133,65 @@ async def add_sticker_in_emoji(message: types.Message, state: FSMContext):
     """Принимает эмоджи"""
     await state.update_data(emoji_in_sticker=message.text)
     data = await state.get_data()
-    video_pack_data = data.get('video_pack', False)
-    if video_pack_data:
-        print(video_pack_data)
-        await state.set_state(VideoState.video)
+    converted_file = data.get('video', False)
+    if converted_file:
+        sticker_format = 'video'
     else:
-        await state.set_state(VideoState.image)
-    # Вернуться в меню стикер-пака
-    await message.answer('Отправьте файл для создания стикера.')
+        converted_file = data.get('image', False)
+        sticker_format = 'static'
+    with open(converted_file, 'rb') as file:
+        sticker_file = FSInputFile(file.name)
+    name = data['name_sticker_pack']
+    title = data['title_sticker_pack']
+    stickers = [{'sticker': sticker_file,
+                 'emoji_list': [data['emoji_in_sticker']]}]
+    await create_sticker_set(
+                             user_id=message.from_user.id,
+                             name=name,
+                             title=title,
+                             stickers=stickers,
+                             sticker_format=sticker_format
+                             )
+    shutil.rmtree(TEMP_FOLDER)
+    await message.answer('Стикек-пак успешно создан')
+
+
+
 
 '''Работа с меню стикерпака'''
 
+#
+# @dp.message(F.text == 'Выбрать готовый стикер-пак')
+# async def all_sticker_pack(message: types.Message):
+#     '''Отправляется список всех созданных стикер-паков'''
+#     await message.answer('Выбрать действие', reply_markup=keyboards.keyboard_stickerpack_menu)
+#     pass
 
-@dp.message(F.text == 'Выбрать готовый стикер-пак')
-async def all_sticker_pack(message: types.Message):
-    '''Отправляется список всех созданных стикер-паков'''
-    await message.answer('Выбрать действие', reply_markup=keyboards.keyboard_stickerpack_menu)
-    pass
+#
+# @dp.message(F.text == 'Удалить стикер')
+# async def delete_sticker(message: types.Message, state: FSMContext):
+#     '''Удаление стикера из стикер пака'''
+#     await state.set_state(VideoState.delete_sticker_state)
+#     await message.answer('Отправьте стикер для удаления')
+#
+#
+# @dp.message(VideoState.delete_sticker_state)
+# async def delete_sticker_on(message: types.Sticker, state: FSMContext):
+#     '''Принятие стикера для удаления'''
+#     await state.clear()
+#
+#
+# @dp.message(F.text == 'Удалить стикер-пак')
+# async def delete_sticker_pack(message: types.Message):
+#     '''Удаление стикер-пака'''
+#     pass
 
-
-@dp.message(F.text == 'Удалить стикер')
-async def delete_sticker(message: types.Message, state: FSMContext):
-    '''Удаление стикера из стикер пака'''
-    await state.set_state(VideoState.delete_sticker_state)
-    await message.answer('Отправьте стикер для удаления')
-
-
-@dp.message(VideoState.delete_sticker_state)
-async def delete_sticker_on(message: types.Sticker, state: FSMContext):
-    '''Принятие стикера для удаления'''
-    await state.clear()
-
-
-@dp.message(F.text == 'Удалить стикер-пак')
-async def delete_sticker_pack(message: types.Message):
-    '''Удаление стикер-пака'''
-    pass
-
-
-@dp.message(F.text == 'Добавить стикер')
-async def create_sticker(message: types.Message, state: FSMContext):
-    '''Принимает запрос на добавление стикера'''
-    await state.set_state(VideoState.add_sticker_state)
-    await message.answer('Отправьте файл для создания стикера.')
-
-
-@dp.message(VideoState.video)
-async def add_sticker_video(message: types.Message, bot: Bot, state: FSMContext):
-    """Принимает видео для обработки в видео стикер"""
-    await state.update_data(video=message.video.file_id)
-    video_file = os.path.join(TEMP_FOLDER, f'video_{message.from_user.id}.mp4')
-    await bot.download(message.video, destination=video_file)
-    converted_video = await asyncio.to_thread(convert.convert_video, video_file)
-    with open(converted_video, 'rb') as file:
-        video_path = FSInputFile(file.name)
-    data = await state.get_data()
-    name = data['name_sticker_pack']
-    title = data['title_sticker_pack']
-    stickers = [{'sticker': video_path,
-                 'emoji_list': [data['emoji_in_sticker']]}]
-    sticker_format = 'video'
-    await create_sticker_set(message=message,
-                             user_id=message.from_user.id,
-                             name=name,
-                             title=title,
-                             stickers=stickers,
-                             sticker_format=sticker_format
-                             )
-    shutil.rmtree(TEMP_FOLDER)
-
-
-@dp.message(VideoState.image)
-async def add_sticker_image(message: types.Message, bot: Bot, state: FSMContext):
-    """Принимает фото для обработки в стикер"""
-    await state.update_data(image=message.photo[-1].file_id)
-    image_file = os.path.join(TEMP_FOLDER, f'image_{message.from_user.id}.jpg')
-    await bot.download(message.photo[-1].file_id, destination=image_file)
-    converted_image = await asyncio.to_thread(convert.convert_image, image_file)
-    with open(converted_image, 'rb') as file:
-        image_path = FSInputFile(file.name)
-    data = await state.get_data()
-    name = data['name_sticker_pack']
-    title = data['title_sticker_pack']
-    stickers = [{'sticker': image_path,
-                 'emoji_list': [data['emoji_in_sticker']]}]
-    sticker_format = 'static'
-    print(name, title)
-    await create_sticker_set(message=message,
-                             user_id=message.from_user.id,
-                             name=name,
-                             title=title,
-                             stickers=stickers,
-                             sticker_format=sticker_format
-                             )
-    shutil.rmtree(TEMP_FOLDER)
-
-
-async def create_sticker_set(message, user_id, name, title, stickers, sticker_format):
-    """Создание стикерпака"""
-    create_set = await bot(CreateNewStickerSet(
-        user_id=user_id,
-        name=name,
-        title=title,
-        stickers=stickers,
-        sticker_format=sticker_format
-    ))
-    if create_set:
-        print('done')
-        await message.answer('твой стикерпак готов')
-    else:
-        await message.answer('Error')
+#
+# @dp.message(F.text == 'Добавить стикер')
+# async def create_sticker(message: types.Message, state: FSMContext):
+#     '''Принимает запрос на добавление стикера'''
+#     await state.set_state(VideoState.add_sticker_state)
+#     await message.answer('Отправьте файл для создания стикера.')
 
 
 @dp.message(VideoState.add_sticker_state)
