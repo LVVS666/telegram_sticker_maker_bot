@@ -11,7 +11,8 @@ keyboard_main_menu = types.ReplyKeyboardMarkup(keyboard=kb_main_menu, resize_key
 '''Выбор действия в меню "Создать новый стикер-пак"'''
 kb_new_stickerpack = [
         [types.KeyboardButton(text='Видео стикер-пак')],
-        [types.KeyboardButton(text='Стандартный стикер-пак')]
+        [types.KeyboardButton(text='Стандартный стикер-пак')],
+        [types.KeyboardButton(text='Назад')]
     ]
 keyboard_new_stickerpack_menu = types.ReplyKeyboardMarkup(keyboard=kb_new_stickerpack, resize_keyboard=True)
 
@@ -23,6 +24,7 @@ kb_stickerpack = [
     [types.KeyboardButton(text='Добавить стикер')],
     [types.KeyboardButton(text='Удалить стикер')],
     [types.KeyboardButton(text='Удалить стикер-пак')],
+    [types.KeyboardButton(text='Назад')]
 ]
 
 keyboard_stickerpack_menu = types.ReplyKeyboardMarkup(keyboard=kb_stickerpack, resize_keyboard=True)
