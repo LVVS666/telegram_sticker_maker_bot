@@ -89,7 +89,7 @@ async def type_sticker_pack(message: types.Message, state: FSMContext):
 @dp.message(VideoState.name_sticker_pack)
 async def create_name_sticker_pack(message: types.Message, state: FSMContext):
     '''Адрес ссылки на стикер-пак'''
-    await state.update_data(name_sticker_pack=message.text + '_by_TSickMBot')
+    await state.update_data(name_sticker_pack=message.text + '_by_TStickMBot')
     await message.answer('Придумайте короткий адрес для стикер-пака.')
     await state.set_state(VideoState.title_sticker_pack)
 
