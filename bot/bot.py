@@ -79,7 +79,7 @@ async def type_sticker_pack(message: types.Message, state: FSMContext):
     if message.text == 'Видео стикер-пак':
         await state.update_data(video_pack=message.text)
     elif message.text == 'Назад':
-        await start(message)
+        return await start(message)
     else:
         await state.update_data(static_pack=message.text)
     await state.set_state(VideoState.name_sticker_pack)
