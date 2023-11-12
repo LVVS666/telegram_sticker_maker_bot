@@ -73,11 +73,13 @@ async def create_new_sticker_pack(message: types.Message, state: FSMContext):
     await state.set_state(VideoState.static_pack)
 
 
-@dp.message((F.text == 'Видео стикер-пак') | (F.text == 'Стандартный стикер-пак'))
+@dp.message((F.text == 'Видео стикер-пак') | (F.text == 'Стандартный стикер-пак') | (F.text == 'Назад'))
 async def type_sticker_pack(message: types.Message, state: FSMContext):
     '''Название для стикер-пака'''
     if message.text == 'Видео стикер-пак':
         await state.update_data(video_pack=message.text)
+    elif message.text == 'Назад':
+        return await start(message)
     else:
         await state.update_data(static_pack=message.text)
     await state.set_state(VideoState.name_sticker_pack)
@@ -87,7 +89,7 @@ async def type_sticker_pack(message: types.Message, state: FSMContext):
 @dp.message(VideoState.name_sticker_pack)
 async def create_name_sticker_pack(message: types.Message, state: FSMContext):
     '''Адрес ссылки на стикер-пак'''
-    await state.update_data(name_sticker_pack=message.text + '_by_TSickMBot')
+    await state.update_data(name_sticker_pack=message.text + '_by_TStickMBot')
     await message.answer('Придумайте короткий адрес для стикер-пака.')
     await state.set_state(VideoState.title_sticker_pack)
 
