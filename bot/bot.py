@@ -10,7 +10,12 @@ from aiogram.types import FSInputFile
 from aiogram.filters.command import Command
 from aiogram.fsm.context import FSMContext
 from aiogram.filters.state import State, StatesGroup
-from aiogram.methods.create_new_sticker_set import CreateNewStickerSet
+from aiogram.methods import (CreateNewStickerSet,
+                             GetStickerSet,
+                             SendSticker,
+                             AddStickerToSet,
+                             DeleteStickerSet,
+                             DeleteStickerFromSet)
 
 import convert
 import keyboards
@@ -155,7 +160,15 @@ async def add_sticker_in_emoji(message: types.Message, state: FSMContext):
                              sticker_format=sticker_format
                              )
     shutil.rmtree(TEMP_FOLDER)
-    await message.answer('Стикек-пак успешно создан')
+    await message.answer('Стикек-пак успешно создан, вот твой стикер')
+    get_sticker = await bot(GetStickerSet(
+        name=name
+    ))
+    file_id = get_sticker.stickers[-1].file_id
+    await bot(SendSticker(
+        chat_id=message.chat.id,
+        sticker=file_id
+    ))
 
 
 
