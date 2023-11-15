@@ -3,6 +3,8 @@ import logging
 import os
 import shutil
 import subprocess
+import tempfile
+from io import BytesIO
 
 from aiogram import Bot, Dispatcher, types, F
 from dotenv import load_dotenv
@@ -82,11 +84,11 @@ async def create_new_sticker_pack(message: types.Message, state: FSMContext):
 async def type_sticker_pack(message: types.Message, state: FSMContext):
     '''Название для стикер-пака'''
     if message.text == 'Видео стикер-пак':
-        await state.update_data(video_pack=message.text)
+        await state.update_data(video_pack=True)
     elif message.text == 'Назад':
         return await start(message)
-    else:
-        await state.update_data(static_pack=message.text)
+    elif message.text == 'Стандартный стикер-пак':
+        await state.update_data(static_pack=True)
     await state.set_state(VideoState.name_sticker_pack)
     await message.answer('Придумайте название для стикер-пака.')
 
@@ -104,10 +106,9 @@ async def title_sticker_pack(message: types.Message, state: FSMContext):
     """Файлы для стикеров"""
     await state.update_data(title_sticker_pack=message.text)
     data = await state.get_data()
-    video_pack_data = data.get('video_pack', False)
-    if video_pack_data:
+    if 'video_pack' in data:
         await state.set_state(VideoState.video)
-    else:
+    elif 'static_pack' in data:
         await state.set_state(VideoState.image)
     await message.answer('Отправьте файл для создания стикера.')
 
@@ -140,14 +141,15 @@ async def add_sticker_in_emoji(message: types.Message, state: FSMContext):
     """Принимает эмоджи"""
     await state.update_data(emoji_in_sticker=message.text)
     data = await state.get_data()
-    converted_file = data.get('video', False)
-    if converted_file:
+    if 'video_pack' in data:
+        converted_file = data.get('video')
         sticker_format = 'video'
-    else:
-        converted_file = data.get('image', False)
+        with open(converted_file, 'rb') as file:
+            sticker_file = FSInputFile(file.name)
+    elif 'static_pack' in data:
+        converted_file = data.get('image')
+        sticker_file = FSInputFile(converted_file)
         sticker_format = 'static'
-    with open(converted_file, 'rb') as file:
-        sticker_file = FSInputFile(file.name)
     name = data['name_sticker_pack']
     title = data['title_sticker_pack']
     stickers = [{'sticker': sticker_file,

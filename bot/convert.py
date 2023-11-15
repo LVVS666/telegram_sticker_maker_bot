@@ -3,7 +3,7 @@ import subprocess
 from io import BytesIO
 
 from PIL import Image
-from rembg import remove
+
 
 from bot import TEMP_FOLDER
 
@@ -32,8 +32,10 @@ def convert_video(video):
 
 def convert_image(image):
     input_image = Image.open(image)
-    output_image = remove(input_image)
+    output_image = input_image.convert('RGBA')
+    alpha = Image.new('L', output_image.size, 255)
+    output_image.putalpha(alpha)
     output_image = output_image.resize((512, 512))
     image_bytes = BytesIO()
-    output_image.save(image_bytes, format="PNG")
+    output_image.save(image_bytes, format='PNG')
     return image_bytes.getvalue()
