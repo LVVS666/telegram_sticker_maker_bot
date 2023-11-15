@@ -130,7 +130,6 @@ async def add_sticker_image(message: types.Message, bot: Bot, state: FSMContext)
     await bot.download(message.photo[-1].file_id, destination=image_file)
     converted_image = await asyncio.to_thread(convert.convert_image, image_file)
     await state.update_data(image=converted_image)
-    shutil.rmtree(TEMP_FOLDER)
     await message.answer('Отправьте эмоджи подходящий стикеру')
     await state.set_state(VideoState.emoji_in_sticker)
 
@@ -148,7 +147,10 @@ async def add_sticker_in_emoji(message: types.Message, state: FSMContext):
             sticker_file = FSInputFile(file.name)
     elif 'static_pack' in data:
         converted_file = data.get('image')
-        sticker_file = FSInputFile(converted_file)
+        temp_id, temp_filename = tempfile.mkstemp(suffix='.png')
+        with open(temp_id, 'wb') as temp_file:
+            temp_file.write(converted_file)
+        sticker_file = FSInputFile(temp_filename)
         sticker_format = 'static'
     name = data['name_sticker_pack']
     title = data['title_sticker_pack']

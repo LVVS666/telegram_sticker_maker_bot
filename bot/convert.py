@@ -31,8 +31,8 @@ def convert_video(video):
 
 
 def convert_image(image):
-    input_image = Image.open(image)
-    output_image = input_image.convert('RGBA')
+    input_image = Image.open(image).convert('RGBA')
+    output_image = input_image
     alpha = Image.new('L', output_image.size, 255)
     output_image.putalpha(alpha)
     output_image = output_image.resize((512, 512))
