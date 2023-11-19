@@ -49,6 +49,7 @@ class VideoState(StatesGroup):
     delete_sticker_state = State()
     add_sticker_state = State()
 
+
 async def create_sticker_set(user_id, name, title, stickers, sticker_format):
     """Создание стикерпака"""
     create_set = await bot(CreateNewStickerSet(
@@ -59,6 +60,7 @@ async def create_sticker_set(user_id, name, title, stickers, sticker_format):
         sticker_format=sticker_format
     ))
     return create_set
+
 
 @dp.message(Command('start'))
 async def start(message: types.Message):
@@ -111,6 +113,7 @@ async def title_sticker_pack(message: types.Message, state: FSMContext):
         await state.set_state(VideoState.image)
     await message.answer('Отправьте файл для создания стикера.')
 
+
 @dp.message(VideoState.video)
 async def add_sticker_video(message: types.Message, bot: Bot, state: FSMContext):
     """Принимает видео для обработки в видео стикер"""
@@ -134,7 +137,6 @@ async def add_sticker_image(message: types.Message, bot: Bot, state: FSMContext)
     await state.set_state(VideoState.emoji_in_sticker)
 
 
-
 @dp.message(VideoState.emoji_in_sticker)
 async def add_sticker_in_emoji(message: types.Message, state: FSMContext):
     """Принимает эмоджи"""
@@ -150,8 +152,9 @@ async def add_sticker_in_emoji(message: types.Message, state: FSMContext):
         sticker_file = FSInputFile(file.name)
     name = data['name_sticker_pack']
     title = data['title_sticker_pack']
+    emoji_list = list(data['emoji_in_sticker'])
     stickers = [{'sticker': sticker_file,
-                 'emoji_list': [data['emoji_in_sticker']]}]
+                 'emoji_list': emoji_list}]
     await create_sticker_set(
                              user_id=message.from_user.id,
                              name=name,
