@@ -168,7 +168,7 @@ async def add_sticker_in_emoji(message: types.Message, state: FSMContext):
                              sticker_format=sticker_format
                              )
     shutil.rmtree(TEMP_FOLDER)
-    await message.answer('Стикек-пак успешно создан, вот твой стикер')
+    await message.answer('Стикер-пак успешно создан, вот твой стикер')
     get_sticker = await bot(GetStickerSet(
         name=name
     ))
