@@ -109,9 +109,10 @@ async def title_sticker_pack(message: types.Message, state: FSMContext):
     video_pack_data = data.get('video_pack', False)
     if video_pack_data:
         await state.set_state(VideoState.video)
-    else:
+        await message.answer('Отправьте видео-файл продолжительностью не более 3 секунд для создания стикера.')
+    elif 'static_pack' in data:
         await state.set_state(VideoState.image)
-    await message.answer('Отправьте файл для создания стикера.')
+        await message.answer('Отправьте изображение для создания стикера.')
 
 
 @dp.message(VideoState.video)
@@ -121,7 +122,9 @@ async def add_sticker_video(message: types.Message, bot: Bot, state: FSMContext)
     await bot.download(message.video, destination=video_file)
     converted_video = await asyncio.to_thread(convert.convert_video, video_file)
     await state.update_data(video=converted_video)
-    await message.answer('Отправьте эмоджи подходящий стикеру')
+    await message.answer('Отправьте эмоджи подходящий видео-стикеру')
+    await message.answer('Можно отправить несколько эмоджи в одном сообщении, однако рекомендуется использовать '
+                         'не больше одного или двух на каждый стикер.')
     await state.set_state(VideoState.emoji_in_sticker)
 
 
@@ -133,7 +136,9 @@ async def add_sticker_image(message: types.Message, bot: Bot, state: FSMContext)
     converted_image = await asyncio.to_thread(convert.convert_image, image_file)
     await state.update_data(image=converted_image)
     shutil.rmtree(TEMP_FOLDER)
-    await message.answer('Отправьте эмоджи подходящий стикеру')
+    await message.answer('Отправьте эмоджи подходящий стандартному стикеру')
+    await message.answer('Можно отправить несколько эмоджи в одном сообщении, однако рекомендуется использовать '
+                         'не больше одного или двух на каждый стикер.')
     await state.set_state(VideoState.emoji_in_sticker)
 
 
