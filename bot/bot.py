@@ -131,7 +131,7 @@ async def add_sticker_video(message: types.Message, bot: Bot, state: FSMContext)
 async def add_sticker_image(message: types.Message, bot: Bot, state: FSMContext):
     """Принимает фото для обработки в стикер"""
     image_file = os.path.join(TEMP_FOLDER, f'image_{message.from_user.id}.jpg')
-    await bot.download(message.photo[-1].file_id, destination=image_file)
+    await bot.download(message.photo[0].file_id, destination=image_file)
     converted_image = await asyncio.to_thread(convert.convert_image, image_file)
     await state.update_data(image=converted_image)
     await message.answer('Отправьте эмоджи подходящий стикеру')
