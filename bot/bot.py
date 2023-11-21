@@ -19,6 +19,7 @@ from aiogram.methods import (CreateNewStickerSet,
                              DeleteStickerSet,
                              DeleteStickerFromSet)
 
+
 import convert
 import keyboards
 
@@ -108,9 +109,10 @@ async def title_sticker_pack(message: types.Message, state: FSMContext):
     data = await state.get_data()
     if 'video_pack' in data:
         await state.set_state(VideoState.video)
+        await message.answer('Отправьте видео-файл продолжительностью не более 3 секунд для создания стикера.')
     elif 'static_pack' in data:
         await state.set_state(VideoState.image)
-    await message.answer('Отправьте файл для создания стикера.')
+        await message.answer('Отправьте изображение для создания стикера')
 
 @dp.message(VideoState.video)
 async def add_sticker_video(message: types.Message, bot: Bot, state: FSMContext):
@@ -119,7 +121,9 @@ async def add_sticker_video(message: types.Message, bot: Bot, state: FSMContext)
     await bot.download(message.video, destination=video_file)
     converted_video = await asyncio.to_thread(convert.convert_video, video_file)
     await state.update_data(video=converted_video)
-    await message.answer('Отправьте эмоджи подходящий стикеру')
+    await message.answer('Отправьте эмоджи подходящий видео-стикеру')
+    await message.answer('Можно отправить несколько эмоджи в одном сообщении, однако рекомендуется использовать '
+                         'не больше одного или двух на каждый стикер.')
     await state.set_state(VideoState.emoji_in_sticker)
 
 
@@ -154,8 +158,9 @@ async def add_sticker_in_emoji(message: types.Message, state: FSMContext):
         sticker_format = 'static'
     name = data['name_sticker_pack']
     title = data['title_sticker_pack']
+    emoji_list = list(data['emoji_in_sticker'])
     stickers = [{'sticker': sticker_file,
-                 'emoji_list': [data['emoji_in_sticker']]}]
+                 'emoji_list': emoji_list}]
     await create_sticker_set(
                              user_id=message.from_user.id,
                              name=name,
@@ -163,7 +168,6 @@ async def add_sticker_in_emoji(message: types.Message, state: FSMContext):
                              stickers=stickers,
                              sticker_format=sticker_format
                              )
-    shutil.rmtree(TEMP_FOLDER)
     await message.answer('Стикек-пак успешно создан, вот твой стикер')
     get_sticker = await bot(GetStickerSet(
         name=name
@@ -179,12 +183,13 @@ async def add_sticker_in_emoji(message: types.Message, state: FSMContext):
 
 '''Работа с меню стикерпака'''
 
-#
-# @dp.message(F.text == 'Выбрать готовый стикер-пак')
-# async def all_sticker_pack(message: types.Message):
-#     '''Отправляется список всех созданных стикер-паков'''
-#     await message.answer('Выбрать действие', reply_markup=keyboards.keyboard_stickerpack_menu)
-#     pass
+
+@dp.message(F.text == 'Выбрать готовый стикер-пак')
+async def all_sticker_pack(message: types.Message, state: FSMContext):
+    '''Отправляется список всех созданных стикер-паков'''
+    data = await state.get_data()
+    await bot.get_sticker_set(name=data['name'])
+    await message.answer('Выбрать действие', reply_markup=keyboards.keyboard_stickerpack_menu)
 
 #
 # @dp.message(F.text == 'Удалить стикер')

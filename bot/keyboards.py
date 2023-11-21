@@ -3,7 +3,7 @@ from aiogram import types
 
 '''Выбор действия в главном меню'''
 kb_main_menu = [
-        [types.KeyboardButton(text='Выбрать готовый стикер-пак')],
+        #[types.KeyboardButton(text='Выбрать готовый стикер-пак')],
         [types.KeyboardButton(text='Создать новый стикер-пак')]
     ]
 keyboard_main_menu = types.ReplyKeyboardMarkup(keyboard=kb_main_menu, resize_keyboard=True)
