@@ -3,6 +3,7 @@ import logging
 import os
 import shutil
 import subprocess
+import tempfile
 
 from aiogram import Bot, Dispatcher, types, F
 from dotenv import load_dotenv
@@ -75,6 +76,20 @@ async def add_sticker_to_set(user_id, name, stickers):
         sticker=stickers
     ))
     return add_sticker
+
+
+async def delete_sticker_from_set(sticker):
+    del_sticker = await bot(DeleteStickerFromSet(
+        sticker=sticker
+    ))
+    return del_sticker
+
+
+async def delete_sticker_set(name):
+    del_pack = await bot(DeleteStickerSet(
+        name=name
+    ))
+    return del_pack
 
 
 @dp.message(Command('start'))
@@ -217,12 +232,21 @@ async def all_sticker_pack(message: types.Message, state: FSMContext):
     await message.answer('Выбрать действие', reply_markup=keyboards.keyboard_stickerpack_menu)
     await state.set_state(VideoState.adding)
 
-#
-# @dp.message(F.text == 'Удалить стикер')
-# async def delete_sticker(message: types.Message, state: FSMContext):
-#     '''Удаление стикера из стикер пака'''
-#     await state.set_state(VideoState.delete_sticker_state)
-#     await message.answer('Отправьте стикер для удаления')
+
+@dp.message(F.text == 'Удалить стикер')
+async def delete_sticker(message: types.Message, state: FSMContext):
+    '''Удаление стикера из стикер пака'''
+    await state.set_state(VideoState.delete_sticker_state)
+    await message.answer('Отправьте стикер для удаления')
+
+
+@dp.message(VideoState.delete_sticker_state)
+async def del_sticker_from_pack(message: types.Message, state: FSMContext):
+    await state.update_data(delete_sticker_state=message.sticker)
+    data = await state.get_data()
+    sticker = data['delete_sticker_state'].file_id
+    await delete_sticker_from_set(sticker)
+    await message.answer('Твой стикер удален из пака')
 #
 #
 # @dp.message(VideoState.delete_sticker_state)
@@ -231,10 +255,20 @@ async def all_sticker_pack(message: types.Message, state: FSMContext):
 #     await state.clear()
 #
 #
-# @dp.message(F.text == 'Удалить стикер-пак')
-# async def delete_sticker_pack(message: types.Message):
-#     '''Удаление стикер-пака'''
-#     pass
+@dp.message(F.text == 'Удалить стикер-пак')
+async def delete_sticker_pack(message: types.Message, state: FSMContext):
+    '''Удаление стикер-пака'''
+    await state.set_state(VideoState.delete_pack)
+    await message.answer('Отправьте стикер из пака который хотите удалить')
+
+
+@dp.message(VideoState.delete_pack)
+async def delete_all_pack(message: types.Message, state: FSMContext):
+    await state.update_data(delete_pack=message.sticker)
+    data = await state.get_data()
+    name = data['delete_pack'].set_name
+    await delete_sticker_set(name)
+    await message.answer('Твой пак удален')
 
 
 @dp.message(F.text == 'Добавить стикер')
