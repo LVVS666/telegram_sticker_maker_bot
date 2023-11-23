@@ -70,6 +70,7 @@ async def create_sticker_set(user_id, name, title, stickers, sticker_format):
 
 
 async def add_sticker_to_set(user_id, name, stickers):
+    """Добавление стикера в пак"""
     add_sticker = await bot(AddStickerToSet(
         user_id=user_id,
         name=name,
@@ -79,6 +80,7 @@ async def add_sticker_to_set(user_id, name, stickers):
 
 
 async def delete_sticker_from_set(sticker):
+    """Удаление стикера из пака"""
     del_sticker = await bot(DeleteStickerFromSet(
         sticker=sticker
     ))
@@ -86,6 +88,7 @@ async def delete_sticker_from_set(sticker):
 
 
 async def delete_sticker_set(name):
+    """Удаление пака"""
     del_pack = await bot(DeleteStickerSet(
         name=name
     ))
@@ -249,6 +252,7 @@ async def delete_sticker(message: types.Message, state: FSMContext):
 
 @dp.message(VideoState.delete_sticker_state)
 async def del_sticker_from_pack(message: types.Message, state: FSMContext):
+    """Принимает стикер и удаляет из пака"""
     await state.update_data(delete_sticker_state=message.sticker)
     data = await state.get_data()
     sticker = data['delete_sticker_state'].file_id
@@ -272,6 +276,7 @@ async def delete_sticker_pack(message: types.Message, state: FSMContext):
 
 @dp.message(VideoState.delete_pack)
 async def delete_all_pack(message: types.Message, state: FSMContext):
+    """Принимает стикер и удаляет пак"""
     await state.update_data(delete_pack=message.sticker)
     data = await state.get_data()
     name = data['delete_pack'].set_name
@@ -325,6 +330,7 @@ async def get_file(message: types.Message, bot, state: FSMContext):
         await state.update_data(static_pack=True)
     await message.answer('Можно отправить только 1 эмоджи в одном сообщении.')
     await state.set_state(VideoState.emoji_in_sticker)
+
 
 @dp.message(VideoState.add_sticker_state)
 async def unscripted_event_handler(message: types.Message):
