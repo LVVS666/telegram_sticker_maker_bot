@@ -228,7 +228,11 @@ async def add_sticker_in_emoji(message: types.Message, state: FSMContext):
         chat_id=message.chat.id,
         sticker=file_id
     ))
-    shutil.rmtree(TEMP_FOLDER)
+    files = os.listdir(TEMP_FOLDER)
+    if files:
+        file_in_folder = os.path.join(TEMP_FOLDER, files[0])
+        os.remove(file_in_folder)
+        await state.clear()
 
 
 
@@ -322,7 +326,6 @@ async def get_file(message: types.Message, bot, state: FSMContext):
         await message.answer('Отправьте эмоджи подходящий видео-стикеру')
     else:
         image_file = os.path.join(TEMP_FOLDER, f'image_{message.from_user.id}.jpg')
-        print(message)
         await bot.download(message.photo[-1].file_id, destination=image_file)
         converted_image = await asyncio.to_thread(convert.convert_image, image_file)
         await message.answer('Отправьте эмоджи подходящий стандартному стикеру')
