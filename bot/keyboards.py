@@ -28,3 +28,16 @@ kb_stickerpack = [
 ]
 
 keyboard_stickerpack_menu = types.ReplyKeyboardMarkup(keyboard=kb_stickerpack, resize_keyboard=True)
+
+'''Меню помощи'''
+kb_help = [
+    [types.KeyboardButton(text='Выбрaть готовый стикер-пак')],
+    [types.KeyboardButton(text='Создaть новый стикер-пак')],
+    [types.KeyboardButton(text='Видео стикер-пaк')],
+    [types.KeyboardButton(text='Стaндартный стикер-пак')],
+    [types.KeyboardButton(text='Добaвить стикер')],
+    [types.KeyboardButton(text='Удaлить стикер')],
+    [types.KeyboardButton(text='Удaлить стикер-пак')],
+    [types.KeyboardButton(text='Нaзад')]
+]
+keyboard_help_menu = types.ReplyKeyboardMarkup(keyboard=kb_help, resize_keyboard=True)
