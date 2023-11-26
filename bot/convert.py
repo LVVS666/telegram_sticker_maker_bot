@@ -30,10 +30,24 @@ def convert_video(video):
     return output_video_path
 
 
-def convert_image(image):
-    input_image = Image.open(image)
-    output_image = remove(input_image)
-    output_image = output_image.resize((512, 512))
-    image_bytes = BytesIO()
-    output_image.save(image_bytes, format="PNG")
-    return image_bytes.getvalue()
+def convert_image(image_path):
+    # Открываем изображение
+    input_image = Image.open(image_path).convert('RGBA')
+    # Создаем альфа-канал и устанавливаем его в 255 (полностью непрозрачный)
+    alpha = Image.new('L', input_image.size, 255)
+    input_image.putalpha(alpha)
+    # Определяем новые размеры с учетом требований для стикеров
+    target_size = 512
+    new_width = target_size if input_image.width >= input_image.height else int(target_size * (input_image.width / input_image.height))
+    new_height = target_size if input_image.height >= input_image.width else int(target_size * (input_image.height / input_image.width))
+    # Изменяем размер изображения
+    resized_image = input_image.resize((new_width, new_height), resample=Image.BICUBIC)
+    left = int((new_width - target_size) / 2)
+    top = int((new_height - target_size) / 2)
+    right = int((new_width + target_size) / 2)
+    bottom = int((new_height + target_size) / 2)
+    cropped_image = resized_image.crop((left, top, right, bottom))
+    # Сохраняем изображение в формате PNG
+    sticker_bytes = BytesIO()
+    cropped_image.save(sticker_bytes, format='PNG', optimize=True, quality=85, exif='')
+    return sticker_bytes.getvalue()
